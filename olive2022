@@ -114,6 +114,8 @@ def convert(args):
         DISK_QCOW = tmpdir / "disk.qcow2"
         DOCKERFILE = tmpdir / "Dockerfile"
 
+        tmpdir.mkdir(exist_ok=True)
+
         # fetch vmnetx package
         if args.vmnetx_package is None:
             _schema, netloc, path, params, query, fragment = urlparse(args.url)
