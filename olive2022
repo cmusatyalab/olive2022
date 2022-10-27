@@ -65,7 +65,7 @@ def launch(args):
 
 
 def stage2(args):
-    """Executes vncviewer (used by launch/sinfonia)."""
+    """Wait for deployment and start a VNC client (used by launch/sinfonia)."""
     print("Waiting for VNC server to become available", end="", flush=True)
     while True:
         print(".", end="", flush=True)
@@ -98,9 +98,11 @@ def stage2(args):
 
 
 def convert(args):
-    """Retrieve vmnetx image and convert to containerDisk + Sinfonia recipe.
+    """Retrieve VMNetX image and convert to containerDisk + Sinfonia recipe.
     """
     RECIPES = Path("RECIPES")
+
+    assert not args.dry_run and "Dry run not implemented for convert"
 
     tmp_ctx = (
         nullcontext(args.tmp_dir)
