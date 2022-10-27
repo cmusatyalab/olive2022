@@ -1,0 +1,17 @@
+apiVersion: v1
+entries:
+  vmi:
+  - apiVersion: v2
+    created: "2022-10-27T01:48:40.225200869Z"
+    dependencies:
+    - name: virtvnc
+      repository: ""
+      version: 0.1.0
+    description: A Helm chart for running a VM instance with Kubevirt
+    digest: 795793419958052d68ec27fd365aedfe22dbae65b3da7fe4ca19950ae1b8495d
+    name: vmi
+    type: application
+    urls:
+    - https://cmusatyalab.github.io/olive2022/vmi-0.1.0.tgz
+    version: 0.1.0
+generated: "2022-10-27T01:48:40.224185974Z"
