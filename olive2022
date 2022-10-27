@@ -226,7 +226,7 @@ ADD --chown=107:107 disk.qcow2 /disk/
     RECIPE.write_text(
         f"""\
 description: "{vmi_fullname}"
-chart: https://cmusatyalab.github.io/sinfonia/vmi
+chart: https://cmusatyalab.github.io/olive2022/vmi
 version: 0.1.0
 values:
   containerDisk:
