@@ -249,7 +249,7 @@ ADD --chown=107:107 disk.qcow2 /disk/
         f"""\
 description: "{vmi_fullname}"
 chart: https://cmusatyalab.github.io/olive2022/vmi
-version: 0.1.0
+version: 0.1.2
 values:
   containerDisk:
     repository: "{args.registry}"
