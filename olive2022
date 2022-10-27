@@ -15,7 +15,6 @@ import socket
 import subprocess
 import sys
 import uuid
-from contextlib import nullcontext
 from pathlib import Path
 from shutil import which
 from tempfile import TemporaryDirectory
@@ -29,6 +28,15 @@ DESKTOP_FILE_NAME = "olive2022.desktop"
 DESKTOP_FILE_ROOT = Path.home() / ".local" / "share" / "applications"
 NAMESPACE_OLIVEARCHIVE = uuid.UUID("835a9728-a1f7-4d0f-82f8-cd0da8838673")
 SINFONIA_TIER1_URL = "https://cmu.findcloudlet.org"
+
+try:
+    from contextlib import nullcontext
+except ImportError:
+    from contextlib import contextmanager
+
+    @contextmanager
+    def nullcontext(enter_result=None):
+        yield enter_result
 
 
 def vmnetx_url_to_uuid(url):
