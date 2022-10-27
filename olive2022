@@ -113,6 +113,7 @@ def convert(args):
         DISK_IMG = tmpdir / "disk.img"
         DISK_QCOW = tmpdir / "disk.qcow2"
         DOCKERFILE = tmpdir / "Dockerfile"
+        DOCKERIGNORE = tmpdir / ".dockerignore"
 
         tmpdir.mkdir(exist_ok=True)
 
@@ -183,6 +184,13 @@ def convert(args):
         # create container
         print("Creating containerDisk image")
         DOCKER_TAG = f"{args.registry}/{sinfonia_uuid}:latest"
+        DOCKERIGNORE.write_text(
+            """\
+*
+!Dockerfile
+!*.qcow2
+"""
+        )
         DOCKERFILE.write_text(
             f"""\
 FROM scratch
@@ -197,6 +205,7 @@ ADD --chown=107:107 disk.qcow2 /disk/
         )
 
         if args.tmp_dir is None:
+            DOCKERIGNORE.unlink()
             DOCKERFILE.unlink()
             DISK_QCOW.unlink()
             tmpdir.rmdir()
