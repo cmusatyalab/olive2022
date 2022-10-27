@@ -36,4 +36,4 @@ file and convert it to a containerDisk image and associated Sinfonia recipe.
 The Docker registry to push the containerDisk image to can be set with the
 `OLIVE2022_REGISTRY` environment variable. If it is a private repository, the
 necessary pull credentials to add to the recipe can be specified with
-"OLIVE2022_CREDENTIALS=<username>:<access_token>".
+`OLIVE2022_CREDENTIALS=<username>:<access_token>`.
