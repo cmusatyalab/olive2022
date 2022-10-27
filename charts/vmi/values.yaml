@@ -15,3 +15,6 @@ resources:
   requests:
     cpu: 1
     memory: 64Mi
+
+machine: {}
+#  type: "pc-i440fx-2.10"

@@ -7,6 +7,10 @@ metadata:
 spec:
   terminationGracePeriodSeconds: 0
   domain:
+{{- if .Values.machine.type -}}
+    machine:
+      type: "{{ .Values.machine.type }}"
+{{- end }}
     devices:
       {{- /* No networking */}}
       autoattachPodInterface: false
