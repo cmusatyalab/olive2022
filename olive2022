@@ -285,7 +285,7 @@ Name=Olive Archive {args.handler.capitalize()}
 NoDisplay=true
 Comment=Execute Olive Archive virtual machines with Sinfonia
 Path=/tmp
-Exec=x-terminal-emulator -e "{sys.executable} {app} {args.handler} %u"
+Exec=x-terminal-emulator -e "{sys.executable} {app} {args.handler} '%u'"
 MimeType=x-scheme-handler/vmnetx;x-scheme-handler/vmnetx+http;x-scheme-handler/vmnetx+https;
 """
     with TemporaryDirectory() as tmpdir:
