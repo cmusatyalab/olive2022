@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2022 Carnegie Mellon University
+# SPDX-License-Identifier: 0BSD
+
 RECIPES/
+__pycache__/
+dist/
 .env
 *.swp

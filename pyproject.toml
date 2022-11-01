@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: 2022 Carnegie Mellon University
+# SPDX-License-Identifier: 0BSD
+
+[tool.poetry]
+name = "olive2022"
+version = "0.1.0"
+description = "Edge-native virtual desktop application"
+authors = ["Jan Harkes <jaharkes@cs.cmu.edu>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "olive2022.py", from = "src" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.6.9"
+
+[tool.poetry.scripts]
+olive2022 = "olive2022:main"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = {version = "^2.20.0", python = "^3.7"}
+
+[tool.isort]
+py_version = 37
+profile = "black"
+
+[tool.black]
+target-version = ["py37"]
+
+[tool.mypy]
+check_untyped_defs = true
+files = ["src"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
