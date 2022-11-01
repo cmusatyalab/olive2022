@@ -19,7 +19,7 @@ from pathlib import Path
 from shutil import which
 from tempfile import TemporaryDirectory
 from time import sleep
-from typing import Callable, ContextManager, Union
+from typing import Callable, ContextManager, Tuple, Union
 from urllib.parse import urlparse, urlunparse
 from urllib.request import urlopen
 from xml.etree import ElementTree as et
@@ -37,6 +37,7 @@ except ImportError:
 
     @contextmanager  # type: ignore
     def nullcontext(enter_result=None):
+        """context that simply yields the passed value."""
         yield enter_result
 
 
@@ -53,13 +54,7 @@ def launch(args: argparse.Namespace) -> None:
 
     subprocess.run(
         args.dry_run
-        + [
-            args.tier3,
-            SINFONIA_TIER1_URL,
-            str(sinfonia_uuid),
-            sys.argv[0],
-            "stage2",
-        ],
+        + [args.tier3, SINFONIA_TIER1_URL, str(sinfonia_uuid), sys.argv[0], "stage2"],
         check=True,
     )
 
@@ -97,137 +92,127 @@ def stage2(args: argparse.Namespace) -> None:
     sleep(10)
 
 
-def convert(args: argparse.Namespace) -> None:
-    """Retrieve VMNetX image and convert to containerDisk + Sinfonia recipe."""
-    RECIPES = Path("RECIPES")
+def _fetch_vmnetx(vmnetx_url: str, tmpdir: Path) -> Path:
+    """Fetch a vmnetx package from the given URL."""
+    _, netloc, path, params, query, fragment = urlparse(vmnetx_url)
+    url = urlunparse(("https", netloc, path, params, query, fragment))
 
-    assert not args.dry_run and "Dry run not implemented for convert"
+    vmnetx_package = tmpdir / "vmnetx-package.zip"
 
-    tmp_ctx: Union[ContextManager[str], TemporaryDirectory] = (
-        nullcontext(args.tmp_dir)
-        if args.tmp_dir is not None
-        else TemporaryDirectory(dir="/var/tmp")
+    print("Fetching", url)
+    with urlopen(url) as src, vmnetx_package.open("wb") as dst:
+        total = int(src.headers["content-length"])
+        copied = 0
+        while True:
+            buf = src.read(4 * 1024 * 1024)
+            if not buf:
+                break
+            dst.write(buf)
+            copied += len(buf)
+            print(f"\r\t{100 * copied // total}%", end="", flush=True)
+        print()
+    return vmnetx_package
+
+
+def _parse_vmnetx_package_xml(vmnetx_package_xml: bytes) -> str:
+    """Extract the virtual machine name from vmnetx-package.xml.
+    This is normally added by Olivearchive based on the archive meta-data.
+    An 'unarchived' package may be missing the virtual machine name.
+    """
+    package_description = et.XML(vmnetx_package_xml)
+    vmi_fullname = package_description.attrib["name"]
+
+    while vmi_fullname in ["", "Virtual Machine"]:
+        vmi_fullname = input("VM image name: ")
+
+    return vmi_fullname
+
+
+def _parse_domain_xml(domain_xml: bytes) -> Tuple[int, int]:
+    """Extract cpu and memory requirements from domain.xml."""
+    domain = et.XML(domain_xml)
+    cpus = int(domain.findtext("vcpu", default="1"))
+    memory = int(domain.findtext("memory", default="65536")) // 1024
+    return cpus, memory
+
+
+def _recompress_disk(disk_img: Path, tmpdir: Path) -> Path:
+    """Recompress disk.img to disk.qcow."""
+    disk_qcow = tmpdir / "disk.qcow2"
+    subprocess.run(
+        [
+            "qemu-img",
+            "convert",
+            "-c",
+            "-p",
+            "-O",
+            "qcow2",
+            str(disk_img.resolve()),
+            str(disk_qcow.resolve()),
+        ],
+        check=True,
     )
-    with tmp_ctx as temporary_directory:
-        tmpdir = Path(temporary_directory)
-        VMNETX_PACKAGE = tmpdir / "vmnetx-package.zip"
-        DISK_IMG = tmpdir / "disk.img"
-        DISK_QCOW = tmpdir / "disk.qcow2"
-        DOCKERFILE = tmpdir / "Dockerfile"
-        DOCKERIGNORE = tmpdir / ".dockerignore"
+    compression = 100 - 100 * disk_qcow.stat().st_size // disk_img.stat().st_size
+    if compression != 0:
+        print(f"compression savings {compression}%")
+    return disk_qcow
 
-        tmpdir.mkdir(exist_ok=True)
 
-        sinfonia_uuid = vmnetx_url_to_uuid(args.url)
-        print("UUID:", sinfonia_uuid)
+def _create_containerdisk(
+    args: argparse.Namespace, tmpdir: Path, vmi_fullname: str, sinfonia_uuid: uuid.UUID
+) -> str:
+    docker_tag = f"{args.registry}/{sinfonia_uuid}:latest"
+    dockerfile = tmpdir / "Dockerfile"
+    dockerignore = tmpdir / ".dockerignore"
 
-        # fetch vmnetx package
-        if args.vmnetx_package is None:
-            _schema, netloc, path, params, query, fragment = urlparse(args.url)
-            url = urlunparse(("https", netloc, path, params, query, fragment))
-            print("Fetching", url)
-            with urlopen(url) as src, VMNETX_PACKAGE.open("wb") as dst:
-                total = int(src.headers["content-length"])
-                copied = 0
-                while True:
-                    buf = src.read(4 * 1024 * 1024)
-                    if not buf:
-                        break
-                    dst.write(buf)
-                    copied += len(buf)
-                    pct = 100 * copied // total
-                    print(f"\r\t{pct}%", end="", flush=True)
-                print()
-        else:
-            VMNETX_PACKAGE = args.vmnetx_package
-
-        # extract metadata and disk image
-        with ZipFile(VMNETX_PACKAGE) as z:
-            package_description = et.XML(z.read("vmnetx-package.xml"))
-            vmi_fullname = package_description.attrib["name"]
-            while vmi_fullname in ["", "Virtual Machine"]:
-                vmi_fullname = input("VM image name: ")
-            print(vmi_fullname)
-
-            domain = et.XML(z.read("domain.xml"))
-            cpus = int(domain.findtext("vcpu", default="1"))
-            memory = int(domain.findtext("memory", default="65536")) // 1024
-            print("cpus", cpus, "memory", memory)
-
-            # extract disk image
-            print("Extracting disk image")
-            z.extract("disk.img", path=tmpdir)
-
-        if args.tmp_dir is None and args.vmnetx_package is None:
-            VMNETX_PACKAGE.unlink()
-
-        # convert disk image
-        print("Recompressing disk image")
-        subprocess.run(
-            [
-                "qemu-img",
-                "convert",
-                "-c",
-                "-p",
-                "-O",
-                "qcow2",
-                str(DISK_IMG.resolve()),
-                str(DISK_QCOW.resolve()),
-            ],
-            check=True,
-        )
-        compression = 100 - 100 * DISK_QCOW.stat().st_size // DISK_IMG.stat().st_size
-        if compression != 0:
-            print(f"compression savings {compression}%")
-
-        if args.tmp_dir is None:
-            DISK_IMG.unlink()
-
-        # create container
-        print("Creating containerDisk image")
-        DOCKER_TAG = f"{args.registry}/{sinfonia_uuid}:latest"
-        DOCKERIGNORE.write_text(
-            """\
+    dockerignore.write_text(
+        """\
 *
 !Dockerfile
 !*.qcow2
 """
-        )
-        DOCKERFILE.write_text(
-            f"""\
+    )
+    dockerfile.write_text(
+        f"""\
 FROM scratch
 LABEL org.opencontainers.image.url="https://olivearchive.org" \
       org.opencontainers.image.title="{vmi_fullname}"
 ADD --chown=107:107 disk.qcow2 /disk/
 """
-        )
-        subprocess.run(
-            ["docker", "build", "-t", DOCKER_TAG, str(DOCKERFILE.parent.resolve())],
-            check=True,
-        )
+    )
+    subprocess.run(
+        ["docker", "build", "-t", docker_tag, str(tmpdir.resolve())], check=True
+    )
 
-        if args.tmp_dir is None:
-            DOCKERIGNORE.unlink()
-            DOCKERFILE.unlink()
-            DISK_QCOW.unlink()
-            tmpdir.rmdir()
+    if args.tmp_dir is None:
+        dockerignore.unlink()
+        dockerfile.unlink()
 
-            if args.deploy_token is None and not input(
-                "Ok to push non-restricted image? [yes/no] "
-            ).lower().startswith("yes"):
-                sys.exit()
+    return docker_tag
 
-            # upload container
-            print("Publishing containerDisk image")
-            subprocess.run(["docker", "push", DOCKER_TAG], check=True)
-            subprocess.run(
-                ["docker", "image", "rm", DOCKER_TAG],
-                check=True,
-                stdout=subprocess.DEVNULL,
-            )
 
-    # create Sinfonia recipe
-    print("Creating Sinfonia recipe", sinfonia_uuid)
+def _publish_containerdisk(args: argparse.Namespace, docker_tag: str) -> None:
+    if args.deploy_token is None and not input(
+        "Ok to push non-restricted image? [yes/no] "
+    ).lower().startswith("yes"):
+        sys.exit()
+
+    # upload container
+    print("Publishing containerDisk image")
+    subprocess.run(["docker", "push", docker_tag], check=True)
+    subprocess.run(
+        ["docker", "image", "rm", docker_tag], check=True, stdout=subprocess.DEVNULL
+    )
+
+
+def _create_recipe(
+    args: argparse.Namespace,
+    vmi_fullname: str,
+    sinfonia_uuid: uuid.UUID,
+    cpus: int,
+    memory: int,
+) -> None:
+    recipes = Path("RECIPES")
 
     if args.deploy_token is not None:
         registry, _ = args.registry.split("/", 1)
@@ -242,9 +227,9 @@ ADD --chown=107:107 disk.qcow2 /disk/
     else:
         credentials = "  restricted: false"
 
-    RECIPE = (RECIPES / str(sinfonia_uuid)).with_suffix(".yaml")
-    RECIPE.parent.mkdir(exist_ok=True)
-    RECIPE.write_text(
+    recipe = (recipes / str(sinfonia_uuid)).with_suffix(".yaml")
+    recipe.parent.mkdir(exist_ok=True)
+    recipe.write_text(
         f"""\
 description: "{vmi_fullname}"
 chart: https://cmusatyalab.github.io/olive2022/vmi
@@ -263,6 +248,72 @@ values:
 """
         + credentials
     )
+
+
+def convert(args: argparse.Namespace) -> None:
+    """Retrieve VMNetX image and convert to containerDisk + Sinfonia recipe."""
+    assert not args.dry_run and "Dry run not implemented for convert"
+
+    tmp_ctx: Union[ContextManager[str], TemporaryDirectory] = (
+        nullcontext(args.tmp_dir)
+        if args.tmp_dir is not None
+        else TemporaryDirectory(dir="/var/tmp")
+    )
+    with tmp_ctx as temporary_directory:
+        tmpdir = Path(temporary_directory)
+        tmpdir.mkdir(exist_ok=True)
+
+        sinfonia_uuid = vmnetx_url_to_uuid(args.url)
+        print("UUID:", sinfonia_uuid)
+
+        # fetch vmnetx package
+        vmnetx_package = (
+            _fetch_vmnetx(args.url, tmpdir)
+            if args.vmnetx_package is None
+            else Path(args.vmnetx_package)
+        )
+
+        # extract metadata and disk image
+        with ZipFile(vmnetx_package) as zipfile:
+            vmnetx_package_xml = zipfile.read("vmnetx-package.xml")
+            vmi_fullname = _parse_vmnetx_package_xml(vmnetx_package_xml)
+            print(vmi_fullname)
+
+            domain_xml = zipfile.read("domain.xml")
+            cpus, memory = _parse_domain_xml(domain_xml)
+            print("cpus", cpus, "memory", memory)
+
+            # extract disk image
+            print("Extracting disk image")
+            zipfile.extract("disk.img", path=tmpdir)
+            disk_img = tmpdir / "disk.img"
+
+        if args.tmp_dir is None and args.vmnetx_package is None:
+            vmnetx_package.unlink()
+
+        # convert disk image
+        print("Recompressing disk image")
+        disk_qcow = _recompress_disk(disk_img, tmpdir)
+
+        if args.tmp_dir is None:
+            disk_img.unlink()
+
+        # create containerdisk image
+        print("Creating containerDisk image")
+        docker_tag = _create_containerdisk(
+            args, disk_qcow.parent, vmi_fullname, sinfonia_uuid
+        )
+
+        if args.tmp_dir is None:
+            disk_qcow.unlink()
+            tmpdir.rmdir()
+
+            _publish_containerdisk(args, docker_tag)
+
+    # create Sinfonia recipe
+    print("Creating Sinfonia recipe", sinfonia_uuid)
+    _create_recipe(args, vmi_fullname, sinfonia_uuid, cpus, memory)
+
     input("Done, hit return to quit\n")
 
 
@@ -325,7 +376,7 @@ def uninstall(args: argparse.Namespace) -> None:
 
 
 def add_subcommand(
-    subp: argparse._SubParsersAction, func: Callable[[argparse.Namespace], None]
+    subp: "argparse._SubParsersAction", func: Callable[[argparse.Namespace], None]
 ) -> argparse.ArgumentParser:
     """Helper to add a subcommand to argparse."""
     subparser = subp.add_parser(
@@ -336,6 +387,7 @@ def add_subcommand(
 
 
 def main():
+    """main entrypoint"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-n", "--dry-run", action="store_const", const=["echo"], default=[]
@@ -362,8 +414,7 @@ def main():
     # convert
     convert_parser = add_subcommand(subparsers, convert)
     convert_parser.add_argument(
-        "--tmp-dir",
-        help="directory to keep intermediate files",
+        "--tmp-dir", help="directory to keep intermediate files"
     )
     convert_parser.add_argument(
         "--registry",
