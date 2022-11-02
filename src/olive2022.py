@@ -25,8 +25,9 @@ from urllib.request import urlopen
 from xml.etree import ElementTree as et
 from zipfile import ZipFile
 
+from xdg import xdg_data_dirs, xdg_data_home
+
 DESKTOP_FILE_NAME = "olive2022.desktop"
-DESKTOP_FILE_ROOT = Path.home() / ".local" / "share" / "applications"
 NAMESPACE_OLIVEARCHIVE = uuid.UUID("835a9728-a1f7-4d0f-82f8-cd0da8838673")
 SINFONIA_TIER1_URL = "https://cmu.findcloudlet.org"
 
@@ -357,27 +358,40 @@ MimeType=x-scheme-handler/vmnetx;x-scheme-handler/vmnetx+http;x-scheme-handler/v
             tmpfile = Path(tmpdir) / DESKTOP_FILE_NAME
             tmpfile.write_text(desktop_file_content, encoding="utf8")
 
-        subprocess.run(
-            args.dry_run
-            + [
-                "desktop-file-install",
-                f"--dir={DESKTOP_FILE_ROOT}",
-                "--delete-original",
-                "--rebuild-mime-info-cache",
-                str(tmpfile),
-            ],
-            check=True,
-        )
+        if args.user:
+            desktop_file_root = xdg_data_home() / "applications"
+            extra_args = [f"--dir={desktop_file_root}"]
+        else:
+            extra_args = []
+
+        try:
+            subprocess.run(
+                args.dry_run
+                + ["desktop-file-install"]
+                + extra_args
+                + ["--delete-original", "--rebuild-mime-info-cache", str(tmpfile)],
+                check=True,
+            )
+        except subprocess.CalledProcessError:
+            print(
+                "Failed to install olive2022.desktop file",
+                "(you may need to use sudo)" if not args.user else "",
+            )
 
 
 def uninstall(args: argparse.Namespace) -> None:
     """Remove desktop file that defines the VMNetX URL handler."""
-    desktop_file = DESKTOP_FILE_ROOT / DESKTOP_FILE_NAME
+    data_dirs = xdg_data_dirs()
+    data_dirs.insert(0, xdg_data_home())
 
-    if args.dry_run:
-        print("rm", desktop_file)
-    elif desktop_file.exists():
-        desktop_file.unlink()
+    for data_dir in data_dirs:
+        desktop_file = data_dir / "applications" / DESKTOP_FILE_NAME
+
+        if args.dry_run:
+            print("rm -f", desktop_file)
+        elif desktop_file.exists():
+            print("Removing", desktop_file)
+            desktop_file.unlink()
 
 
 def add_subcommand(
@@ -410,6 +424,13 @@ def main():
 
     # install
     install_parser = add_subcommand(subparsers, install)
+    install_parser.add_argument(
+        "--user", action="store_true", help="install in user specific location"
+    )
+    install_parser.add_argument(
+        "--no-user", dest="user", action="store_false", help="install in system path"
+    )
+    install_parser.set_defaults(user=True)
     install_parser.add_argument("--tier3", help="path to sinfonia-tier3 executable")
     install_parser.add_argument("handler", choices=["launch", "convert"])
 
