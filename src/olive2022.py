@@ -19,7 +19,7 @@ from pathlib import Path
 from shutil import copyfileobj, which
 from tempfile import TemporaryDirectory
 from time import sleep
-from typing import Callable, ContextManager, Tuple, Union
+from typing import Callable, Tuple
 from urllib.parse import urlparse, urlunparse
 from urllib.request import urlopen
 from xml.etree import ElementTree as et
@@ -30,16 +30,6 @@ from xdg import xdg_data_dirs, xdg_data_home
 DESKTOP_FILE_NAME = "olive2022.desktop"
 NAMESPACE_OLIVEARCHIVE = uuid.UUID("835a9728-a1f7-4d0f-82f8-cd0da8838673")
 SINFONIA_TIER1_URL = "https://cmu.findcloudlet.org"
-
-try:
-    from contextlib import nullcontext
-except ImportError:
-    from contextlib import contextmanager
-
-    @contextmanager  # type: ignore
-    def nullcontext(enter_result=None):
-        """context that simply yields the passed value."""
-        yield enter_result
 
 
 try:
@@ -258,14 +248,13 @@ values:
 
 def convert(args: argparse.Namespace) -> None:
     """Retrieve VMNetX image and convert to containerDisk + Sinfonia recipe."""
-    assert not args.dry_run and "Dry run not implemented for convert"
+    if args.dry_run:
+        print("Dry run not implemented for convert")
+        sys.exit(1)
 
-    tmp_ctx: Union[ContextManager[str], TemporaryDirectory] = (
-        nullcontext(args.tmp_dir)
-        if args.tmp_dir is not None
-        else TemporaryDirectory(dir="/var/tmp")
-    )
-    with tmp_ctx as temporary_directory:
+    with TemporaryDirectory(dir="/var/tmp") as temporary_directory:
+        if args.tmp_dir:
+            temporary_directory = args.tmp_dir
         tmpdir = Path(temporary_directory)
         tmpdir.mkdir(exist_ok=True)
 
