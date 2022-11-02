@@ -16,7 +16,7 @@ import subprocess
 import sys
 import uuid
 from pathlib import Path
-from shutil import which
+from shutil import copyfileobj, which
 from tempfile import TemporaryDirectory
 from time import sleep
 from typing import Callable, ContextManager, Tuple, Union
@@ -39,6 +39,17 @@ except ImportError:
     def nullcontext(enter_result=None):
         """context that simply yields the passed value."""
         yield enter_result
+
+
+try:
+    from tqdm.tqdm import wrapattr as tqdm_wrapattr
+except ImportError:
+    from contextlib import contextmanager
+
+    @contextmanager
+    def tqdm_wrapattr(stream, _method, _total):
+        """No-progressbar wrapper."""
+        yield stream
 
 
 def vmnetx_url_to_uuid(url: str) -> uuid.UUID:
@@ -100,17 +111,11 @@ def _fetch_vmnetx(vmnetx_url: str, tmpdir: Path) -> Path:
     vmnetx_package = tmpdir / "vmnetx-package.zip"
 
     print("Fetching", url)
-    with urlopen(url) as src, vmnetx_package.open("wb") as dst:
-        total = int(src.headers["content-length"])
-        copied = 0
-        while True:
-            buf = src.read(4 * 1024 * 1024)
-            if not buf:
-                break
-            dst.write(buf)
-            copied += len(buf)
-            print(f"\r\t{100 * copied // total}%", end="", flush=True)
-        print()
+    with urlopen(url) as response:
+        total = int(response.headers["content-length"])
+        with tqdm_wrapattr(response, "read", total=total) as src:
+            with vmnetx_package.open("wb") as dst:
+                copyfileobj(src, dst)
     return vmnetx_package
 
 
