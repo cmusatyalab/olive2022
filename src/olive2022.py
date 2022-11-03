@@ -25,22 +25,12 @@ from urllib.request import urlopen
 from xml.etree import ElementTree as et
 from zipfile import ZipFile
 
+from tqdm import tqdm
 from xdg import xdg_data_dirs, xdg_data_home
 
 DESKTOP_FILE_NAME = "olive2022.desktop"
 NAMESPACE_OLIVEARCHIVE = uuid.UUID("835a9728-a1f7-4d0f-82f8-cd0da8838673")
 SINFONIA_TIER1_URL = "https://cmu.findcloudlet.org"
-
-
-try:
-    from tqdm.tqdm import wrapattr as tqdm_wrapattr
-except ImportError:
-    from contextlib import contextmanager
-
-    @contextmanager
-    def tqdm_wrapattr(stream, _method, _total):
-        """No-progressbar wrapper."""
-        yield stream
 
 
 def vmnetx_url_to_uuid(url: str) -> uuid.UUID:
@@ -104,7 +94,7 @@ def _fetch_vmnetx(vmnetx_url: str, tmpdir: Path) -> Path:
     print("Fetching", url)
     with urlopen(url) as response:
         total = int(response.headers["content-length"])
-        with tqdm_wrapattr(response, "read", total=total) as src:
+        with tqdm.wrapattr(response, "read", total=total) as src:
             with vmnetx_package.open("wb") as dst:
                 copyfileobj(src, dst)
     return vmnetx_package

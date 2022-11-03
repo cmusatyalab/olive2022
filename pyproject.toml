@@ -14,11 +14,8 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.6.9"
-tqdm = { version = "^4.64.1", optional = true }
+tqdm = "^4.64.1"
 xdg = "^5.1.1"
-
-[tool.poetry.extras]
-tqdm = ["tqdm"]
 
 [tool.poetry.scripts]
 olive2022 = "olive2022:main"
