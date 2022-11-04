@@ -25,6 +25,7 @@ from urllib.request import urlopen
 from xml.etree import ElementTree as et
 from zipfile import ZipFile
 
+from sinfonia_tier3 import sinfonia_tier3
 from tqdm import tqdm
 from xdg import xdg_data_dirs, xdg_data_home
 
@@ -40,18 +41,20 @@ def vmnetx_url_to_uuid(url: str) -> uuid.UUID:
     return uuid.uuid5(NAMESPACE_OLIVEARCHIVE, canonical_url)
 
 
-def launch(args: argparse.Namespace) -> None:
+def launch(args: argparse.Namespace) -> int:
     """Launch a Virtual Machine (VM) image with Sinfonia."""
     sinfonia_uuid = vmnetx_url_to_uuid(args.url)
 
-    subprocess.run(
-        args.dry_run
-        + [args.tier3, SINFONIA_TIER1_URL, str(sinfonia_uuid), sys.argv[0], "stage2"],
-        check=True,
-    )
+    if args.dry_run:
+        print(
+            "sinfonia_tier3", SINFONIA_TIER1_URL, sinfonia_uuid, sys.argv[0], "stage2"
+        )
+        return 0
+
+    return sinfonia_tier3(SINFONIA_TIER1_URL, sinfonia_uuid, [sys.argv[0], "stage2"])
 
 
-def stage2(args: argparse.Namespace) -> None:
+def stage2(args: argparse.Namespace) -> int:
     """Wait for deployment and start a VNC client (used by launch/sinfonia)."""
     print("Waiting for VNC server to become available", end="", flush=True)
     while True:
@@ -71,17 +74,18 @@ def stage2(args: argparse.Namespace) -> None:
     viewer = which("remote-viewer")
     if viewer is not None:
         subprocess.run(args.dry_run + [viewer, "vnc://vmi-vnc:5900"], check=True)
-        return
+        return 0
 
     # Other viewers accept host:display on the command line
     for app in ["gvncviewer", "vncviewer"]:
         viewer = which(app)
         if viewer is not None:
             subprocess.run(args.dry_run + [viewer, "vmi-vnc:0"], check=True)
-            return
+            return 0
 
     print("Failed to find a local vnc-viewer candidate")
     sleep(10)
+    return 1
 
 
 def _fetch_vmnetx(vmnetx_url: str, tmpdir: Path) -> Path:
@@ -236,11 +240,11 @@ values:
     )
 
 
-def convert(args: argparse.Namespace) -> None:
+def convert(args: argparse.Namespace) -> int:
     """Retrieve VMNetX image and convert to containerDisk + Sinfonia recipe."""
     if args.dry_run:
         print("Dry run not implemented for convert")
-        sys.exit(1)
+        return 1
 
     with TemporaryDirectory(dir="/var/tmp") as temporary_directory:
         if args.tmp_dir:
@@ -300,9 +304,10 @@ def convert(args: argparse.Namespace) -> None:
     _create_recipe(args, vmi_fullname, sinfonia_uuid, cpus, memory)
 
     input("Done, hit return to quit\n")
+    return 0
 
 
-def install(args: argparse.Namespace) -> None:
+def install(args: argparse.Namespace) -> int:
     """Create and install desktop file to handle VMNetX URLs."""
     # Make sure sinfonia is installed, not reliable as it fails to account for
     # things like running from a local venv.
@@ -356,9 +361,10 @@ MimeType=x-scheme-handler/vmnetx;x-scheme-handler/vmnetx+http;x-scheme-handler/v
                 "Failed to install olive2022.desktop file",
                 "(you may need to use sudo)" if not args.user else "",
             )
+    return 0
 
 
-def uninstall(args: argparse.Namespace) -> None:
+def uninstall(args: argparse.Namespace) -> int:
     """Remove desktop file that defines the VMNetX URL handler."""
     data_dirs = xdg_data_dirs()
     data_dirs.insert(0, xdg_data_home())
@@ -371,10 +377,11 @@ def uninstall(args: argparse.Namespace) -> None:
         elif desktop_file.exists():
             print("Removing", desktop_file)
             desktop_file.unlink()
+    return 0
 
 
 def add_subcommand(
-    subp: "argparse._SubParsersAction", func: Callable[[argparse.Namespace], None]
+    subp: "argparse._SubParsersAction", func: Callable[[argparse.Namespace], int]
 ) -> argparse.ArgumentParser:
     """Helper to add a subcommand to argparse."""
     subparser = subp.add_parser(
@@ -441,7 +448,7 @@ def main():
     add_subcommand(subparsers, stage2)
 
     parsed_args = parser.parse_args()
-    parsed_args.func(parsed_args)
+    sys.exit(parsed_args.func(parsed_args))
 
 
 if __name__ == "__main__":
