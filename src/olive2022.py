@@ -396,7 +396,9 @@ def add_subcommand(
 def main():
     """main entrypoint"""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--version", action="version", version=f"%(prog) {__version__}")
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
+    )
     parser.add_argument(
         "-n", "--dry-run", action="store_const", const=["echo"], default=[]
     )
