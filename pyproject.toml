@@ -3,7 +3,7 @@
 
 [tool.poetry]
 name = "olive2022"
-version = "0.1.0"
+version = "0.1.1"
 description = "Edge-native virtual desktop application"
 authors = [
     "Carnegie Mellon University <satya+group@cs.cmu.edu>",
@@ -34,8 +34,10 @@ olive2022 = "olive2022:main"
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
 flake8 = "^5.0.4"
+invoke = "^1.7.3"
 pre-commit = "^2.20.0"
 pylint = {version = "^2.15.5", python = "^3.7.2"}
+tbump = "^6.9.0"
 
 [tool.isort]
 py_version = 37

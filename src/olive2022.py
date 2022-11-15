@@ -9,6 +9,8 @@ Launch an Olive Archive virtual machine on a Sinfonia-Tier2 cloudlet and
 connect over the Sinfonia-created wireguard tunnel with a vnc client.
 """
 
+__version__ = "0.1.1"
+
 import argparse
 import os
 import socket
@@ -394,6 +396,7 @@ def add_subcommand(
 def main():
     """main entrypoint"""
     parser = argparse.ArgumentParser()
+    parser.add_argument("--version", action="version", version=f"%(prog) {__version__}")
     parser.add_argument(
         "-n", "--dry-run", action="store_const", const=["echo"], default=[]
     )
