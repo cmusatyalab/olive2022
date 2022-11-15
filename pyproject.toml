@@ -23,7 +23,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7.2"
+python = "^3.7"
 sinfonia-tier3 = "^0.3.0"
 tqdm = "^4.64.1"
 xdg = "^5.1.1"
@@ -35,7 +35,7 @@ olive2022 = "olive2022:main"
 black = "^22.10.0"
 flake8 = "^5.0.4"
 pre-commit = "^2.20.0"
-pylint = "^2.15.5"
+pylint = {version = "^2.15.5", python = "^3.7.2"}
 
 [tool.isort]
 py_version = 37
