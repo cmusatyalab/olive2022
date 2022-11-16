@@ -49,11 +49,19 @@ def launch(args: argparse.Namespace) -> int:
 
     if args.dry_run:
         print(
-            "sinfonia_tier3", SINFONIA_TIER1_URL, sinfonia_uuid, sys.argv[0], "stage2"
+            "sinfonia_tier3",
+            SINFONIA_TIER1_URL,
+            sinfonia_uuid,
+            sys.executable,
+            "-m",
+            "olive2022",
+            "stage2",
         )
         return 0
 
-    return sinfonia_tier3(SINFONIA_TIER1_URL, sinfonia_uuid, [sys.argv[0], "stage2"])
+    return sinfonia_tier3(
+        SINFONIA_TIER1_URL, sinfonia_uuid, [sys.executable, "-m", "olive2022", "stage2"]
+    )
 
 
 def stage2(args: argparse.Namespace) -> int:
@@ -311,21 +319,9 @@ def convert(args: argparse.Namespace) -> int:
 
 def install(args: argparse.Namespace) -> int:
     """Create and install desktop file to handle VMNetX URLs."""
-    # Make sure sinfonia is installed, not reliable as it fails to account for
-    # things like running from a local venv.
-    tier3 = args.tier3 or which("sinfonia-tier3")
-    if tier3 is None:
-        print("\n!!! Couldn't find 'sinfonia-tier3', make sure it is installed !!!\n")
-
     uninstall(args)
 
-    try:
-        app = Path.cwd().joinpath(sys.argv[0]).resolve(strict=True)
-    except FileNotFoundError:
-        # workaround for poetry bug #995
-        app = Path(sys.executable).parent.joinpath(sys.argv[0]).resolve(strict=True)
-
-    handler = "launch" if not args.convert else "convert"
+    handler = "convert" if args.convert else "launch"
 
     desktop_file_content = f"""\
 [Desktop Entry]
@@ -335,7 +331,7 @@ Name=Olive Archive {handler.capitalize()}
 NoDisplay=true
 Comment=Execute Olive Archive virtual machines with Sinfonia
 Path=/tmp
-Exec=x-terminal-emulator -e "{app} {handler} --tier3={tier3} '%u'"
+Exec=x-terminal-emulator -e "{sys.executable} -m olive2022 {handler} '%u'"
 MimeType=x-scheme-handler/vmnetx;x-scheme-handler/vmnetx+http;x-scheme-handler/vmnetx+https;
 """
     with TemporaryDirectory() as tmpdir:
@@ -385,7 +381,8 @@ def uninstall(args: argparse.Namespace) -> int:
 
 
 def add_subcommand(
-    subp: "argparse._SubParsersAction", func: Callable[[argparse.Namespace], int]
+    subp: argparse._SubParsersAction[argparse.ArgumentParser],
+    func: Callable[[argparse.Namespace], int],
 ) -> argparse.ArgumentParser:
     """Helper to add a subcommand to argparse."""
     subparser = subp.add_parser(
@@ -395,7 +392,7 @@ def add_subcommand(
     return subparser
 
 
-def main():
+def main() -> int:
     """main entrypoint"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -410,9 +407,6 @@ def main():
 
     # launch
     launch_parser = add_subcommand(subparsers, launch)
-    launch_parser.add_argument(
-        "--tier3", default="sinfonia-tier3", help="path to sinfonia-tier3 executable"
-    )
     launch_parser.add_argument("url", metavar="VMNETX_URL")
 
     # install
@@ -428,7 +422,6 @@ def main():
         help="install in system path",
     )
     install_parser.set_defaults(user=True)
-    install_parser.add_argument("--tier3", help="path to sinfonia-tier3 executable")
     install_parser.add_argument(
         "--convert",
         action="store_true",
@@ -463,8 +456,9 @@ def main():
     add_subcommand(subparsers, stage2)
 
     parsed_args = parser.parse_args()
-    sys.exit(parsed_args.func(parsed_args))
+    func: Callable[[argparse.Namespace], int] = parsed_args.func
+    return func(parsed_args)
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

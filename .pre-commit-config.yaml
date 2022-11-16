@@ -60,6 +60,9 @@ repos:
     hooks:
       - id: mypy
         name: Check type hints with mypy
+        pass_filenames: false
+        additional_dependencies:
+          - sinfonia-tier3
 
 #  - repo: https://github.com/fsfe/reuse-tool
 #    rev: v1.0.0

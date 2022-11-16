@@ -24,7 +24,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-sinfonia-tier3 = "^0.3.0"
+sinfonia-tier3 = "^0.3.3"
 tqdm = "^4.64.1"
 xdg = "^5.1.1"
 
@@ -47,7 +47,24 @@ profile = "black"
 target-version = ["py37"]
 
 [tool.mypy]
+# Ensure full coverage
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
 check_untyped_defs = true
+# Restrict dynamic typing
+disallow_any_generics = true
+disallow_subclassing_any = true
+warn_return_any = true
+# Know exactly what you're doing
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unused_configs = true
+warn_unreachable = true
+show_error_codes = true
+# Explicit is better than implicit
+no_implicit_optional = true
 files = ["src"]
 
 [build-system]
