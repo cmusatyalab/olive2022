@@ -325,15 +325,17 @@ def install(args: argparse.Namespace) -> int:
         # workaround for poetry bug #995
         app = Path(sys.executable).parent.joinpath(sys.argv[0]).resolve(strict=True)
 
+    handler = "launch" if not args.convert else "convert"
+
     desktop_file_content = f"""\
 [Desktop Entry]
 Type=Application
 Version=1.0
-Name=Olive Archive {args.handler.capitalize()}
+Name=Olive Archive {handler.capitalize()}
 NoDisplay=true
 Comment=Execute Olive Archive virtual machines with Sinfonia
 Path=/tmp
-Exec=x-terminal-emulator -e "{app} {args.handler} --tier3={tier3} '%u'"
+Exec=x-terminal-emulator -e "{app} {handler} --tier3={tier3} '%u'"
 MimeType=x-scheme-handler/vmnetx;x-scheme-handler/vmnetx+http;x-scheme-handler/vmnetx+https;
 """
     with TemporaryDirectory() as tmpdir:
@@ -419,11 +421,19 @@ def main():
         "--user", action="store_true", help="install in user specific location"
     )
     install_parser.add_argument(
-        "--no-user", dest="user", action="store_false", help="install in system path"
+        "--no-user",
+        "--system",
+        dest="user",
+        action="store_false",
+        help="install in system path",
     )
     install_parser.set_defaults(user=True)
     install_parser.add_argument("--tier3", help="path to sinfonia-tier3 executable")
-    install_parser.add_argument("handler", choices=["launch", "convert"])
+    install_parser.add_argument(
+        "--convert",
+        action="store_true",
+        help="run 'olive2022 convert' instead of 'olive2022 launch'",
+    )
 
     # uninstall
     add_subcommand(subparsers, uninstall)
