@@ -588,7 +588,7 @@ testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (
 
 [[package]]
 name = "sinfonia-tier3"
-version = "0.3.2"
+version = "0.3.3"
 description = "Tier 3 component of the Sinfonia system"
 category = "main"
 optional = false
@@ -811,7 +811,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "110345e160cccfeb2c00dcf5ee2d9d334e8057c22de935737f00b91c5ec28273"
+content-hash = "df3131c636c5f61209446e037cbf96debfb1e0f03088f8a8be41366c67db2245"
 
 [metadata.files]
 astroid = [
@@ -1202,8 +1202,8 @@ setuptools = [
     {file = "setuptools-65.5.1.tar.gz", hash = "sha256:e197a19aa8ec9722928f2206f8de752def0e4c9fc6953527360d1c36d94ddb2f"},
 ]
 sinfonia-tier3 = [
-    {file = "sinfonia_tier3-0.3.2-py3-none-any.whl", hash = "sha256:ad7af93150cdbede419edc3c100ebf0958fa9816e78840cb5610532644e95f30"},
-    {file = "sinfonia_tier3-0.3.2.tar.gz", hash = "sha256:660f810f3bb21fc098e9d7b28fd959d62f85e5aa02ff511c8cbfda2bdee7b55c"},
+    {file = "sinfonia_tier3-0.3.3-py3-none-any.whl", hash = "sha256:f4db9479a5370f3ad06e77647b0c38861cd533e8234f6c730932b3122b9b00fe"},
+    {file = "sinfonia_tier3-0.3.3.tar.gz", hash = "sha256:59c3443d50ddf610faf6681e36aecbf2b591faa74c2b31e529d0b331410655b9"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
