@@ -24,7 +24,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-sinfonia-tier3 = "^0.3.3"
+sinfonia-tier3 = "^0.5.0"
 tqdm = "^4.64.1"
 xdg = "^5.1.1"
 
@@ -36,8 +36,12 @@ black = "^22.10.0"
 flake8 = "^5.0.4"
 invoke = "^1.7.3"
 pre-commit = "^2.20.0"
-pylint = {version = "^2.15.5", python = "^3.7.2"}
 tbump = "^6.9.0"
+
+[tool.poetry.group.test.dependencies]
+mypy = "^0.991"
+pylint = {version = "^2.15.5", python = "^3.7.2"}
+types-tqdm = "^4.64.7.3"
 
 [tool.isort]
 py_version = 37
