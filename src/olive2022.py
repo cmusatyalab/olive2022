@@ -348,6 +348,7 @@ MimeType=x-scheme-handler/vmnetx;x-scheme-handler/vmnetx+http;x-scheme-handler/v
         else:
             extra_args = []
 
+        print("Installing olive2022.desktop")
         try:
             subprocess.run(
                 args.dry_run
@@ -381,7 +382,7 @@ def uninstall(args: argparse.Namespace) -> int:
 
 
 def add_subcommand(
-    subp: argparse._SubParsersAction[argparse.ArgumentParser],
+    subp: "argparse._SubParsersAction[argparse.ArgumentParser]",
     func: Callable[[argparse.Namespace], int],
 ) -> argparse.ArgumentParser:
     """Helper to add a subcommand to argparse."""
