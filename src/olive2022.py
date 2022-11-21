@@ -22,25 +22,27 @@ from shutil import copyfileobj, which
 from tempfile import TemporaryDirectory
 from time import sleep
 from typing import Callable, Tuple
-from urllib.parse import urlparse, urlunparse
 from urllib.request import urlopen
 from xml.etree import ElementTree as et
 from zipfile import ZipFile
 
+import yaml
 from sinfonia_tier3 import sinfonia_tier3
 from tqdm import tqdm
 from xdg import xdg_data_dirs, xdg_data_home
+from yarl import URL
 
 DESKTOP_FILE_NAME = "olive2022.desktop"
 NAMESPACE_OLIVEARCHIVE = uuid.UUID("835a9728-a1f7-4d0f-82f8-cd0da8838673")
 SINFONIA_TIER1_URL = "https://cmu.findcloudlet.org"
 
 
-def vmnetx_url_to_uuid(url: str) -> uuid.UUID:
+def vmnetx_url_to_uuid(vmnetx_url: URL) -> uuid.UUID:
     """Canonicalize VMNetX URL and derive Sinfonia backend UUID."""
-    _schema, netloc, path, _params, _query, _fragment = urlparse(url)
-    canonical_url = urlunparse(("vmnetx+https", netloc, path, None, None, None))
-    return uuid.uuid5(NAMESPACE_OLIVEARCHIVE, canonical_url)
+    canonical_url = (
+        vmnetx_url.with_scheme("vmnetx+https").with_query(None).with_fragment(None)
+    )
+    return uuid.uuid5(NAMESPACE_OLIVEARCHIVE, str(canonical_url))
 
 
 def launch(args: argparse.Namespace) -> int:
@@ -98,15 +100,13 @@ def stage2(args: argparse.Namespace) -> int:
     return 1
 
 
-def _fetch_vmnetx(vmnetx_url: str, tmpdir: Path) -> Path:
+def _fetch_vmnetx(vmnetx_url: URL, tmpdir: Path) -> Path:
     """Fetch a vmnetx package from the given URL."""
-    _, netloc, path, params, query, fragment = urlparse(vmnetx_url)
-    url = urlunparse(("https", netloc, path, params, query, fragment))
-
+    url = vmnetx_url.with_scheme("https")
     vmnetx_package = tmpdir / "vmnetx-package.zip"
 
     print("Fetching", url)
-    with urlopen(url) as response:
+    with urlopen(str(url)) as response:
         total = int(response.headers["content-length"])
         with tqdm.wrapattr(response, "read", total=total) as src:
             with vmnetx_package.open("wb") as dst:
@@ -214,39 +214,47 @@ def _create_recipe(
 ) -> None:
     recipes = Path("RECIPES")
 
+    VALUES = dict(
+        containerDisk=dict(
+            repository=args.registry,
+            name=sinfonia_uuid,
+            bus="sata",
+        ),
+        resources=dict(
+            requests=dict(
+                cpu=cpus,
+                memory=f"{memory}Mi",
+            ),
+        ),
+        virtvnc=dict(
+            fullnameOverride="vmi",
+        ),
+        restricted=False,
+    )
+
     if args.deploy_token is not None:
         registry, _ = args.registry.split("/", 1)
         username, password = args.deploy_token.split(":", 1)
-        credentials = f"""\
-  containerDiskCredentials:
-    registry: "{registry}"
-    username: "{username}"
-    password: "{password}"
-  restricted: true
-"""
-    else:
-        credentials = "  restricted: false"
+        VALUES.update(
+            containerDiskCredentials=dict(
+                registry=registry,
+                username=username,
+                password=password,
+            ),
+            restricted=True,
+        )
 
     recipe = (recipes / str(sinfonia_uuid)).with_suffix(".yaml")
     recipe.parent.mkdir(exist_ok=True)
     recipe.write_text(
-        f"""\
-description: "{vmi_fullname}"
-chart: https://cmusatyalab.github.io/olive2022/vmi
-version: 0.1.4
-values:
-  containerDisk:
-    repository: "{args.registry}"
-    name: "{sinfonia_uuid}"
-    bus: sata
-  resources:
-    requests:
-      cpu: {cpus}
-      memory: {memory}Mi
-  virtvnc:
-    fullnameOverride: vmi
-"""
-        + credentials
+        yaml.dump(
+            dict(
+                description=vmi_fullname,
+                chart="https://cmusatyalab.github.io/olive2022/vmi",
+                version="0.1.4",
+                values=VALUES,
+            )
+        )
     )
 
 
@@ -408,7 +416,7 @@ def main() -> int:
 
     # launch
     launch_parser = add_subcommand(subparsers, launch)
-    launch_parser.add_argument("url", metavar="VMNETX_URL")
+    launch_parser.add_argument("url", metavar="VMNETX_URL", type=URL)
 
     # install
     install_parser = add_subcommand(subparsers, install)
@@ -450,7 +458,7 @@ def main() -> int:
         default=os.environ.get("OLIVE2022_CREDENTIALS"),
         help="docker pull credentials to add to recipe [OLIVE2022_CREDENTIALS]",
     )
-    convert_parser.add_argument("url", metavar="VMNETX_URL")
+    convert_parser.add_argument("url", metavar="VMNETX_URL", type=URL)
     convert_parser.add_argument("vmnetx_package", nargs="?")
 
     # stage2

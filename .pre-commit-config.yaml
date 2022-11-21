@@ -63,6 +63,7 @@ repos:
         pass_filenames: false
         additional_dependencies:
           - sinfonia-tier3
+          - types-PyYAML
           - types-tqdm
 
 #  - repo: https://github.com/fsfe/reuse-tool

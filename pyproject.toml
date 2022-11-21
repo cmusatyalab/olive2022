@@ -24,9 +24,11 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
+pyyaml = "^6.0"
 sinfonia-tier3 = "^0.5.0"
 tqdm = "^4.64.1"
 xdg = "^5.1.1"
+yarl = "^1.8.1"
 
 [tool.poetry.scripts]
 olive2022 = "olive2022:main"
@@ -41,6 +43,7 @@ tbump = "^6.9.0"
 [tool.poetry.group.test.dependencies]
 mypy = "^0.991"
 pylint = {version = "^2.15.5", python = "^3.7.2"}
+types-pyyaml = "^6.0.12.2"
 types-tqdm = "^4.64.7.3"
 
 [tool.isort]

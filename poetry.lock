@@ -719,6 +719,14 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "types-pyyaml"
+version = "6.0.12.2"
+description = "Typing stubs for PyYAML"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "types-tqdm"
 version = "4.64.7.3"
 description = "Typing stubs for tqdm"
@@ -839,7 +847,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "03f7b9dbb94547468a6a1b8bbcdce133cda10fac35ceffc974584db3ac90bd6a"
+content-hash = "a3410748bff9d2060bac375067160049301acb5990ae252c26bb95667027c8f0"
 
 [metadata.files]
 astroid = [
@@ -1322,6 +1330,10 @@ typed-ast = [
     {file = "typed_ast-1.5.4-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:98f80dee3c03455e92796b58b98ff6ca0b2a6f652120c263efdba4d6c5e58f72"},
     {file = "typed_ast-1.5.4-cp39-cp39-win_amd64.whl", hash = "sha256:0fdbcf2fef0ca421a3f5912555804296f0b0960f0418c440f5d6d3abb549f3e1"},
     {file = "typed_ast-1.5.4.tar.gz", hash = "sha256:39e21ceb7388e4bb37f4c679d72707ed46c2fbf2a5609b8b8ebc4b067d977df2"},
+]
+types-pyyaml = [
+    {file = "types-PyYAML-6.0.12.2.tar.gz", hash = "sha256:6840819871c92deebe6a2067fb800c11b8a063632eb4e3e755914e7ab3604e83"},
+    {file = "types_PyYAML-6.0.12.2-py3-none-any.whl", hash = "sha256:1e94e80aafee07a7e798addb2a320e32956a373f376655128ae20637adb2655b"},
 ]
 types-tqdm = [
     {file = "types-tqdm-4.64.7.3.tar.gz", hash = "sha256:b63406ff848ca80aea65248a303ac8a32d4dea8065ec5fc0f28d66c755ef0fb2"},
