@@ -233,7 +233,7 @@ def _create_recipe(
         f"""\
 description: "{vmi_fullname}"
 chart: https://cmusatyalab.github.io/olive2022/vmi
-version: 0.1.2
+version: 0.1.4
 values:
   containerDisk:
     repository: "{args.registry}"
