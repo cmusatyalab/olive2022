@@ -11,6 +11,8 @@ spec:
     machine:
       type: "{{ .Values.machine.type }}"
 {{- end }}
+    resources:
+      {{- toYaml .Values.resources | nindent 6 }}
     devices:
       {{- /* No networking */}}
       autoattachPodInterface: false
@@ -18,14 +20,12 @@ spec:
       - name: containerdisk
         disk:
           bus: "{{ .Values.containerDisk.bus }}"
-    resources:
-      {{- toYaml .Values.resources | nindent 6 }}
 {{- if .Values.machine.network }}
-    interfaces:
-    - name: default
-      model: e1000
-      masquerade: {}
-  network:
+      interfaces:
+      - name: default
+        model: e1000
+        masquerade: {}
+  networks:
   - name: default
     pod: {}
 {{- end }}

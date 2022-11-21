@@ -3,7 +3,7 @@ apiVersion: v2
 description: A Helm chart for running a VM instance with Kubevirt
 name: vmi
 type: application
-version: 0.1.3
+version: 0.1.4
 
 dependencies:
 - name: virtvnc
