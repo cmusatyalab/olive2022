@@ -16,5 +16,6 @@ resources:
     cpu: 1
     memory: 64Mi
 
-machine: {}
+machine:
+  network: false
 #  type: "pc-i440fx-2.10"

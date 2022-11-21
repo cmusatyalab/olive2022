@@ -20,6 +20,15 @@ spec:
           bus: "{{ .Values.containerDisk.bus }}"
     resources:
       {{- toYaml .Values.resources | nindent 6 }}
+{{- if .Values.machine.network }}
+    interfaces:
+    - name: default
+      model: e1000
+      masquerade: {}
+  network:
+  - name: default
+    pod: {}
+{{- end }}
   volumes:
   - name: containerdisk
     containerDisk:
