@@ -17,6 +17,7 @@ import socket
 import subprocess
 import sys
 import uuid
+from configparser import ConfigParser
 from pathlib import Path
 from shutil import copyfileobj, which
 from tempfile import TemporaryDirectory
@@ -26,10 +27,10 @@ from urllib.request import urlopen
 from xml.etree import ElementTree as et
 from zipfile import ZipFile
 
-import yaml
 from sinfonia_tier3 import sinfonia_tier3
 from tqdm import tqdm
 from xdg import xdg_data_dirs, xdg_data_home
+from yaml import dump as yaml_dump
 from yarl import URL
 
 DESKTOP_FILE_NAME = "olive2022.desktop"
@@ -246,16 +247,16 @@ def _create_recipe(
 
     recipe = (recipes / str(sinfonia_uuid)).with_suffix(".yaml")
     recipe.parent.mkdir(exist_ok=True)
-    recipe.write_text(
-        yaml.dump(
+    with recipe.open("w", encoding="utf-8") as fh:
+        yaml_dump(
             dict(
                 description=vmi_fullname,
                 chart="https://cmusatyalab.github.io/olive2022/vmi",
                 version="0.1.4",
                 values=VALUES,
-            )
+            ),
+            fh,
         )
-    )
 
 
 def convert(args: argparse.Namespace) -> int:
@@ -329,26 +330,35 @@ def install(args: argparse.Namespace) -> int:
     """Create and install desktop file to handle VMNetX URLs."""
     uninstall(args)
 
+    python = sys.executable
     handler = "convert" if args.convert else "launch"
 
-    desktop_file_content = f"""\
-[Desktop Entry]
-Type=Application
-Version=1.0
-Name=Olive Archive {handler.capitalize()}
-NoDisplay=true
-Comment=Execute Olive Archive virtual machines with Sinfonia
-Path=/tmp
-Exec=x-terminal-emulator -e "{sys.executable} -m olive2022 {handler} '%u'"
-MimeType=x-scheme-handler/vmnetx;x-scheme-handler/vmnetx+http;x-scheme-handler/vmnetx+https;
-"""
+    desktop_file_content = ConfigParser()
+    desktop_file_content["Desktop Entry"] = dict(
+        Type="Application",
+        Version="1.0",
+        Name=f"Olive Archive {handler.capitalize()}",
+        NoDisplay="true",
+        Comment="Execute Olive Archive virtual machines with Sinfonia",
+        Path="/tmp",
+        Exec=f"x-terminal-emulator -e \"{python} -m olive2022 {handler} '%%u'\"",
+        MimeType="".join(
+            [
+                "x-scheme-handler/vmnetx;",
+                "x-scheme-handler/vmnetx+http;",
+                "x-scheme-handler/vmnetx+https;",
+            ]
+        ),
+    )
+
     with TemporaryDirectory() as tmpdir:
         if args.dry_run:
             tmpfile = Path(DESKTOP_FILE_NAME)
             print(f"cat {tmpfile} << EOF\n{desktop_file_content}EOF")
         else:
             tmpfile = Path(tmpdir) / DESKTOP_FILE_NAME
-            tmpfile.write_text(desktop_file_content, encoding="utf8")
+            with tmpfile.open("w", encoding="utf8") as fh:
+                desktop_file_content.write(fh, space_around_delimiters=False)
 
         if args.user:
             desktop_file_root = xdg_data_home() / "applications"

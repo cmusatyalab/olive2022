@@ -10,12 +10,40 @@ that can be executed with KubeVirt. The containerDisk images can be pushed into
 a private Docker registry.
 
 
+## Installation
+
+Olive2022 depends on Python-3.7+ and a VNC client. On an Ubuntu 18.04
+system these can be installed with.
+
+```
+sudo apt install python3.8-venv virt-viewer
+```
+
+In my experience installation in a separate virtualenv is more reliable and
+simplified by using [pipx](https://pypa.github.io/pipx/installation/).
+
+```
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+```
+
+Once these dependencies are in place, installation should be fairly
+straightforward, even specifying a python version should only be necessary if
+the system default happens to be older than Python-3.7.
+
+```
+pipx install [--python python3.8] olive2022
+```
+
+
 ## Usage
 
-`olive2022 install` creates a .desktop file to declare a handler for vmnetx+https URLs.
+`olive2022 install` creates a .desktop file to declare a handler for
+vmnetx+https URLs.
 
 When you then 'Launch' a virtual machine from the Olivearchive website, the
-handler will execute `olive2022 launch` with the VMNetX URL for the virtual machine image.
+handler will execute `olive2022 launch` with the VMNetX URL for the virtual
+machine image.
 
 
 ## Internals
