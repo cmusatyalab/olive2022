@@ -53,7 +53,7 @@ def launch(args: argparse.Namespace) -> int:
     if args.dry_run:
         print(
             "sinfonia_tier3",
-            SINFONIA_TIER1_URL,
+            args.tier1_url,
             sinfonia_uuid,
             sys.executable,
             "-m",
@@ -63,7 +63,9 @@ def launch(args: argparse.Namespace) -> int:
         return 0
 
     return sinfonia_tier3(
-        SINFONIA_TIER1_URL, sinfonia_uuid, [sys.executable, "-m", "olive2022", "stage2"]
+        str(args.tier1_url),
+        sinfonia_uuid,
+        [sys.executable, "-m", "olive2022", "stage2"],
     )
 
 
@@ -426,6 +428,12 @@ def main() -> int:
 
     # launch
     launch_parser = add_subcommand(subparsers, launch)
+    launch_parser.add_argument(
+        "--tier1-url",
+        type=URL,
+        default=os.environ.get("OLIVE2022_TIER1_URL", SINFONIA_TIER1_URL),
+        help="Sinfonia-tier1 instance to use",
+    )
     launch_parser.add_argument("url", metavar="VMNETX_URL", type=URL)
 
     # install
