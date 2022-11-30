@@ -12,15 +12,16 @@ a private Docker registry.
 
 ## Installation
 
-Olive2022 depends on Python-3.7+ and a VNC client. On an Ubuntu 18.04
-system these can be installed with.
+Olive2022 depends on an available VNC client. I've found that virt-viewer from
+libvirt generally does a good job. On a Debian/Ubuntu system this can be
+installed with.
 
 ```
-sudo apt install python3.8-venv virt-viewer
+sudo apt install virt-viewer
 ```
 
-In my experience installation in a separate virtualenv is more reliable and
-simplified by using [pipx](https://pypa.github.io/pipx/installation/).
+It is best to manage the installation of olive2022 in a separate virtualenv with
+[pipx](https://pypa.github.io/pipx/installation/).
 
 ```
 python3 -m pip install --user pipx
@@ -32,8 +33,11 @@ straightforward, even specifying a python version should only be necessary if
 the system default happens to be older than Python-3.7.
 
 ```
-pipx install [--python python3.8] olive2022
+pipx install olive2022
 ```
+
+If installation fails at any point, there are various troubleshooting tips at
+the end of this document.
 
 
 ## Usage
@@ -65,3 +69,43 @@ The Docker registry to push the containerDisk image to can be set with the
 `OLIVE2022_REGISTRY` environment variable. If it is a private repository, the
 necessary pull credentials to add to the recipe can be specified with
 `OLIVE2022_CREDENTIALS=<username>:<access_token>`.
+
+
+## Installation troubleshooting
+
+#### `/usr/bin/python3: No module named pip`
+
+Pip is not installed on your system. On Debian/Ubuntu systems, to reduce the
+chance of interfering with packaged Python modules, the default Python
+installation does not install pip and even disables the `python3 -m ensurepip`
+way of installing a recent version of the pip package manager. You have to
+install the python3-pip and python3-venv packages.
+
+```
+sudo apt install python3-pip python3-venv
+```
+
+#### `pipx: command not found`
+
+`python3 -m pipx ensurepath` is only able to fix the PATH environment for
+some (mostly bourne-like) shells. If you are using bash/sh/fish/zsh it may be
+sufficient to restart your terminal to pick up the new path.
+
+With csh/tcsh you will probably have to add the following to your `.login` or
+`.cshrc` files and/or run `rehash` to pick up any new binaries.
+
+```
+set path = ( $path $HOME/.local/bin )
+```
+
+#### `ERROR: Could not find a version that satisfies the requirement olive2022 (from versions: none)`
+
+Because Olive2022 depends on Python-3.7 or newer, installation fails with this
+error when the default Python interpreter is older. On Ubuntu 18.04 you can
+install a newer Python interpreter and explicitly specify it as an alternate
+interpreter version when installing with pipx.
+
+```
+sudo apt install python3.8
+pipx install --python python3.8 olive2022
+```
