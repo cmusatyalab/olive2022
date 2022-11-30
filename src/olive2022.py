@@ -9,7 +9,7 @@ Launch an Olive Archive virtual machine on a Sinfonia-Tier2 cloudlet and
 connect over the Sinfonia-created wireguard tunnel with a vnc client.
 """
 
-__version__ = "0.1.4"
+__version__ = "0.1.4.post.dev0"
 
 import argparse
 import os
