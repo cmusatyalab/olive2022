@@ -25,7 +25,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.7"
 pyyaml = "^6.0"
-sinfonia-tier3 = "^0.5.0"
+sinfonia-tier3 = "^0.6.0"
 tqdm = "^4.64.1"
 xdg = "^5.1.1"
 yarl = "^1.8.1"
@@ -36,7 +36,7 @@ olive2022 = "olive2022:main"
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
 flake8 = "^5.0.4"
-invoke = "^1.7.3"
+poethepoet = "^0.16.5"
 pre-commit = "^2.20.0"
 tbump = "^6.9.0"
 
@@ -73,6 +73,9 @@ show_error_codes = true
 # Explicit is better than implicit
 no_implicit_optional = true
 files = ["src"]
+
+[tool.poe]
+include = "tasks.toml"
 
 [build-system]
 requires = ["poetry-core"]
