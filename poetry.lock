@@ -626,7 +626,7 @@ testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (
 
 [[package]]
 name = "sinfonia-tier3"
-version = "0.6.0"
+version = "0.6.2"
 description = "Tier 3 component of the Sinfonia system"
 category = "main"
 optional = false
@@ -641,8 +641,8 @@ pyyaml = ">=6.0,<7.0"
 randomname = ">=0.1.5,<0.2.0"
 requests = ">=2.28.1,<3.0.0"
 typing-extensions = ">=4.4.0,<5.0.0"
-wireguard-tools = ">=0.2.0,<0.3.0"
-wireguard4netns = ">=0.1.1,<0.2.0"
+wireguard-tools = ">=0.3.0,<0.4.0"
+wireguard4netns = ">=0.1.2,<0.2.0"
 xdg = ">=5.1.1,<6.0.0"
 yarl = ">=1.7.2,<2.0.0"
 
@@ -826,7 +826,7 @@ python-versions = "*"
 
 [[package]]
 name = "wireguard-tools"
-version = "0.2.0"
+version = "0.3.0"
 description = "Pure python reimplementation of wireguard-tools"
 category = "main"
 optional = false
@@ -838,7 +838,7 @@ pyroute2 = ">=0.7.3,<0.8.0"
 
 [[package]]
 name = "wireguard4netns"
-version = "0.1.1"
+version = "0.1.2"
 description = "WireGuard VPN networking for unprivileged network namespaces"
 category = "main"
 optional = false
@@ -849,7 +849,7 @@ attrs = ">=22.1.0,<23.0.0"
 importlib-resources = ">=5.0,<6.0"
 pyroute2 = ">=0.7.3,<0.8.0"
 typing-extensions = {version = ">=4.4.0,<5.0.0", markers = "python_version < \"3.8\""}
-wireguard-tools = ">=0.2.0,<0.3.0"
+wireguard-tools = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "wrapt"
@@ -895,7 +895,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "069376ee936dbc72bbce62c1d9efac188a14e1c9e4f57d0df9b53e87de8eb6c3"
+content-hash = "f6c57b0e6eae4ee7cfbb0475ca96c28db813b85d9a37ea297174a4658bbd070e"
 
 [metadata.files]
 astroid = [
@@ -1328,8 +1328,8 @@ setuptools = [
     {file = "setuptools-65.6.3.tar.gz", hash = "sha256:a7620757bf984b58deaf32fc8a4577a9bbc0850cf92c20e1ce41c38c19e5fb75"},
 ]
 sinfonia-tier3 = [
-    {file = "sinfonia_tier3-0.6.0-py3-none-any.whl", hash = "sha256:1684dc40f2a92d9d001533f0e26a263357dc46fbbe9449507ad62558cb4d1687"},
-    {file = "sinfonia_tier3-0.6.0.tar.gz", hash = "sha256:60c5a704626fecb5f978a76b26a601a9ee927dc8d0cd8080e1ac94873a069620"},
+    {file = "sinfonia_tier3-0.6.2-py3-none-any.whl", hash = "sha256:55556a82d1d7936be2c60216077d5bf70b7eade635b4041b08391dd9dd359973"},
+    {file = "sinfonia_tier3-0.6.2.tar.gz", hash = "sha256:8f1622199b684188fc36c40c7799011a62be40b684224495d073fbef6a6cccfa"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
@@ -1422,16 +1422,16 @@ win-inet-pton = [
     {file = "win_inet_pton-1.1.0.tar.gz", hash = "sha256:dd03d942c0d3e2b1cf8bab511844546dfa5f74cb61b241699fa379ad707dea4f"},
 ]
 wireguard-tools = [
-    {file = "wireguard_tools-0.2.0-py3-none-any.whl", hash = "sha256:3c706e83a350573536eee70b21257193a50cf9afae79bc9d4bcace0a7bdf5548"},
-    {file = "wireguard_tools-0.2.0.tar.gz", hash = "sha256:6d2bb7754c350528316ae1e658ba3968e23e39ef804ec61e1d4df9e554e8593c"},
+    {file = "wireguard_tools-0.3.0-py3-none-any.whl", hash = "sha256:29f94e704ec7bc42a752d8c7dacdee01bd53ede55be340c7daff8896b5fe5727"},
+    {file = "wireguard_tools-0.3.0.tar.gz", hash = "sha256:18bff418faa35193b26f61504ff37e64f4d3e00d53f1dac2806ff50f985abc40"},
 ]
 wireguard4netns = [
-    {file = "wireguard4netns-0.1.1-cp310-cp310-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3a0374a58ee9129a123084dca916e226fbfc005f1c505d53f8a81184f0ef5de9"},
-    {file = "wireguard4netns-0.1.1-cp311-cp311-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cf711fe499a6b276a55dada664b4e2c736024bfe4d34f9f2d20b30ed881aa780"},
-    {file = "wireguard4netns-0.1.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0ee87be18d7a7a7bc9254f7c129a59127376734a6f43770d21db0ce6bb13aa33"},
-    {file = "wireguard4netns-0.1.1-cp38-cp38-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cab5bb506005e1bd6a0398375cc315ac7a0dbd61492c95c8b96de4c4c4141493"},
-    {file = "wireguard4netns-0.1.1-cp39-cp39-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fc8d6661504700d63bfd3420cf39eafe4a0c86034f2a1f78a85d164b9b0eeabd"},
-    {file = "wireguard4netns-0.1.1.tar.gz", hash = "sha256:c7fbf2ee3aead71741a8fe56b9e5c84a613d07879b4f8dd3b09e9c4b44e7eca2"},
+    {file = "wireguard4netns-0.1.2-cp310-cp310-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:05b36679e8e8dfce82e5bd90073be7af1980126cb3f4ea0b5a72fe1810fde6c9"},
+    {file = "wireguard4netns-0.1.2-cp311-cp311-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:11da7011d8753108d31866abf55abb87fa44da19ab2466a44efec74332dd0e71"},
+    {file = "wireguard4netns-0.1.2-cp37-cp37m-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:76ea46753bfbc0c1d0962af6cf33728a45ac241aa50f7479c74df419566880af"},
+    {file = "wireguard4netns-0.1.2-cp38-cp38-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bc0da0667821da01b05f8d8b4b4147de9b10903b556f2292a069c9b6cd66e6d6"},
+    {file = "wireguard4netns-0.1.2-cp39-cp39-manylinux_2_17_x86_64.manylinux_2_5_x86_64.manylinux1_x86_64.manylinux2014_x86_64.whl", hash = "sha256:03df0f261267dccaf50a4c95f40e92bcc74234de4676f2156af5d88df192b672"},
+    {file = "wireguard4netns-0.1.2.tar.gz", hash = "sha256:7bb331e96e0c5ae9d2550b8e7b7ea9197b3c52ebeb769a0ef898a9aa2d9b1d89"},
 ]
 wrapt = [
     {file = "wrapt-1.14.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:1b376b3f4896e7930f1f772ac4b064ac12598d1c38d04907e696cc4d794b43d3"},

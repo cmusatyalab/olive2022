@@ -25,7 +25,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.7"
 pyyaml = "^6.0"
-sinfonia-tier3 = "^0.6.0"
+sinfonia-tier3 = "^0.6.2"
 tqdm = "^4.64.1"
 xdg = "^5.1.1"
 yarl = "^1.8.1"
