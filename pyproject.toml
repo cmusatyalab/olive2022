@@ -3,7 +3,7 @@
 
 [tool.poetry]
 name = "olive2022"
-version = "0.1.5.post.dev0"
+version = "0.1.6"
 description = "Edge-native virtual desktop application"
 authors = [
     "Carnegie Mellon University <satya+group@cs.cmu.edu>",
